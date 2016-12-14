@@ -152,7 +152,7 @@ P8_44 (I connected to "brake" / standby) is GPIO 73.
 - The EQEP directory may be named slightly different; find the precise one with
 
        $ find /sys/devices/ -iname "*qep*"
-        /sys/devices/ocp.3/48302000.epwmss/48302180.eqep
+       /sys/devices/ocp.3/48302000.epwmss/48302180.eqep
 
 - The same goes for the PWM; use `find /sys/devices/ -name duty` to find it.
 
@@ -175,7 +175,7 @@ C functions provided
 ----------------------
 
 - PWM
-    - `stop()` / `run()`: set "run" to 0 / 1
+    - `stop()` / `run()`: write 0 / 1 to the "run" PWM sysfs entry
     - `rawduty(char* c, int len)`: write a string to the "duty" sysfs file: "20000" is 0% duty cycle, "0" is 100% duty cycle
     - `duty( double d )`: write 0 - 100% to the "duty" sysfs file
     - `voltage( double v)`: convert voltage v into a duty cycle & GPIO direction and change them appropriately
