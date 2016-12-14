@@ -131,7 +131,6 @@ EQEP in `bb-simple-sysfs-c-lib.h`:
 
 If these sysfs directories don't exist, execute the following lines to create them:
 
-export SLOTS=/sys/devices/bone_capemgr.9/slots (the .9 may be different for you).
 
 ```bash
     $ export SLOTS=$(find /sys/devices -name slots)
