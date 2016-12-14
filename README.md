@@ -1,3 +1,9 @@
+Justin's Beaglebone C I/O library (24-Volt DC Motor project)
+==============================================================
+
+This project lives on my GitHub at <https://github.com/justinpearson/Beaglebone-Motor-Demo>
+
+
 Summary
 ---------
 
@@ -18,13 +24,21 @@ sysfs entries, without getting bogged down with C++ classes or device-tree overl
 Picture of setup
 -----------------
 
-![](Pictures/bb-24v-motor-setup.jpg)
+Here's some pictures of the hardware.
 
-![](Pictures/bb-24v-motor-setup2.jpg)
+![The motor setup.](Pictures/bb-24v-motor-setup.jpg)
+\ 
+
+
+![The I/O pins used on the Beaglebone Black.](Pictures/bb-24v-motor-setup2.jpg)
+\ 
+
 
 
 Quick Start
 --------------
+
+### Configure Beaglebone, build, & run 
 
 ```bash
     ssh debian@10.42.0.123
@@ -40,8 +54,7 @@ Quick Start
     ./test-pid    
 ```    
 
-Quick Start C Program
-----------------------
+### Turn motor in C
 
 ```c
     #include "bb-simple-sysfs-c-lib.h"
@@ -68,10 +81,8 @@ Quick Start C Program
 ```
 
 
-Quick Start PID controller 
-----------------------------
+### Proportional controller in C
 
-Well, just P really.
 
 ```c
 
@@ -125,7 +136,10 @@ The hardware consists of:
 
 The wiring schematic is shown here:
 
-![](Pictures/bb-24v-motor-wiring.jpg)
+![Wiring schematic.](Pictures/bb-24v-motor-wiring.jpg)
+\ 
+
+
 
 In particular, note that:
 
@@ -137,12 +151,6 @@ In particular, note that:
 - The rotary encoder's EQEP signal is read by the BBB's EQEP peripheral.
 
 
-Sign conventions
------------------
-
-- ccw is positive angle
-- positive motor voltage turns motor cw
-- cw 1 rev => -1500 encoder ticks
 
 
 Software
@@ -205,8 +213,8 @@ line. I hard-coded the PWM period to 50kHz. The rotary encoder seems to have a r
 ```
 
 
-C functions provided
-----------------------
+### C functions provided
+
 
 - PWM
     - `stop()` / `run()`: write 0 / 1 to the "run" PWM sysfs entry
@@ -255,8 +263,8 @@ Details / Notes
 
 
 
-Background: sysfs entries
-````````````````````````````
+### Background: sysfs entries
+
 
 The BBB uses a sysfs filesystem to provide a userspace interface to
 the hardware. For example, set up a 50kHz PWM on pin P8_34 like this:
@@ -275,8 +283,8 @@ with files like `duty`, `period`, and `run`. Now turn on the PWM:
 
 
 
-Hardware setup notes
-``````````````````````
+### Hardware setup notes
+
 
 cw 1 rev: eqep changes by -1450
 
@@ -292,11 +300,24 @@ dir pin low: motor turns cw; high: ccw
 
 
 
+### Sign conventions
+
+For the `shaft_angle_deg()` and `voltage()` functions:
+
+- ccw is positive angle
+- positive motor voltage turns motor cw
+- cw 1 rev => -1500 encoder ticks
 
 
+### Motor specifications
 
-Troubleshooting
-````````````````````
+- motor coil resistance: 14 ohms
+- motor coil inductance: 11.52 mH
+- rotary encoder: 1500 lines / rev, roughly
+
+
+### Troubleshooting
+
 
 The EQEP driver isn't included in the stock BBB kernel, so `echo bone_eqep1 > $SLOTS` will fail in `dmesg`; update kernel to latest with
 
@@ -305,7 +326,7 @@ The EQEP driver isn't included in the stock BBB kernel, so `echo bone_eqep1 > $S
     sudo ./update_kernel.sh
     sudo reboot
 
-(Source: http://elinux.org/Beagleboard:BeagleBoneBlack_Debian)
+(Source: <http://elinux.org/Beagleboard:BeagleBoneBlack_Debian> )
 
 Now you should have 
 
@@ -336,6 +357,8 @@ Load Device Tree Overlays:
 
 Have them added automatically by adding to `/boot/uboot/uEnv.txt`:
 
-    optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN capemgr.enable_partno=BB-ADC,bone_pwm_P8_34,am33xx_pwm,bone_eqep1
+    optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN \
+       capemgr.enable_partno=BB-ADC,bone_pwm_P8_34,am33xx_pwm,bone_eqep1
+
 
 
