@@ -172,6 +172,28 @@ line. I hard-coded the PWM period to 50kHz. The rotary encoder seems to have a r
 ```
 
 
+C functions provided
+----------------------
+
+- PWM
+    - `stop()` / `run()`: set "run" to 0 / 1
+    - `rawduty(char* c, int len)`: write a string to the "duty" sysfs file: "20000" is 0% duty cycle, "0" is 100% duty cycle
+    - `duty( double d )`: write 0 - 100% to the "duty" sysfs file
+    - `voltage( double v)`: convert voltage v into a duty cycle & GPIO direction and change them appropriately
+
+- GPIO
+    - `stby()` / `unstby()`: set P8_44 to 1 / 0
+    - `cw()` / `ccw()`: set P8_45 to 1 / 0
+
+- EQEP
+    - `int eqep_counts()`: read eqep "position" file as an int
+    - `double shaft_angle_deg()`: gets eqep position and converts to degrees
+
+
+
+
+
+
 Details / Notes
 ---------------
 
@@ -200,8 +222,8 @@ Details / Notes
 
 
 
-Background 
--------------
+Background: sysfs entries
+````````````````````````````
 
 The BBB uses a sysfs filesystem to provide a userspace interface to
 the hardware. For example, set up a 50kHz PWM on pin P8_34 like this:
@@ -221,7 +243,7 @@ with files like `duty`, `period`, and `run`. Now turn on the PWM:
 
 
 Hardware setup notes
------------------------
+``````````````````````
 
 cw 1 rev: eqep changes by -1450
 
@@ -240,8 +262,8 @@ dir pin low: motor turns cw; high: ccw
 
 
 
-Devleoper's Guide
--------------------
+Troubleshooting
+````````````````````
 
 The EQEP driver isn't included in the stock BBB kernel, so `echo bone_eqep1 > $SLOTS` will fail in `dmesg`; update kernel to latest with
 
@@ -282,29 +304,5 @@ Load Device Tree Overlays:
 Have them added automatically by adding to `/boot/uboot/uEnv.txt`:
 
     optargs=capemgr.disable_partno=BB-BONELT-HDMI,BB-BONELT-HDMIN capemgr.enable_partno=BB-ADC,bone_pwm_P8_34,am33xx_pwm,bone_eqep1
-
-
-
-
-PWM
------
-
-- stop / run: set "run" to 0 / 1
-- rawduty: write a string to the "duty" sysfs file: "20000" is 0% duty cycle, "0" is 100% duty cycle
-- duty( double d ): write 0 - 100% to the "duty" sysfs file
-- voltage( double v): convert voltage v into a duty cycle & GPIO direction and change them appropriately
-
-GPIO
-----
-
-- stby / unstby: set P8_44 to 1 / 0
-- cw / ccw: set P8_45 to 1 / 0
-
-
-EQEP
-----
-
-- eqep_counts: read eqep "position" file as an int
-- shaft_angle_deg: gets eqep position and converts to degrees
 
 
