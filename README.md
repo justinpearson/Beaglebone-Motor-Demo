@@ -68,7 +68,44 @@ Quick Start C Program
 ```
 
 
+Quick Start PID controller 
+----------------------------
 
+Well, just P really.
+
+```c
+
+int main ( int argc, char *argv[] ) {
+ 
+  setup();
+  unstby();
+  run();
+  cw();
+
+  double kp = -.015;
+  double dt = 0.1;      // sec, time per iteration
+  double max_time = 10; // sec, max time of sim
+  int num_iters = max_time / dt;
+  double freq = 1;      // Hz, controls how fast the reference angle changes
+
+  int i=0;
+  for( i=0; i<num_iters; i++ ) {
+    double angle = shaft_angle_deg();
+    double ref = 180 * sin(2.0 * M_PI * freq * dt * i); // deg
+    double error = ref-angle;
+    double v = kp * error;
+    voltage(v);
+    usleep(dt*1000000.0);
+  }
+
+  stop();
+  stby();
+  shutdown();
+
+return 0;
+}
+
+```
 
 
 Hardware setup
