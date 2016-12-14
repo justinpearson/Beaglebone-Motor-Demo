@@ -6,7 +6,7 @@ the motor shaft angle with a EQEP-based rotary encoder and drives the motor
 with PWM through a motor driver. The motor driver draws power through
 a disused desktop power supply's 12-Volt line.
 
-The purpose of this demo is to show that **it's easy to use C to interface with the PWM, GPIO, and EQEP sysfs entries** that Beaglebone provides to access I/O from userspace. Only functions like `open`, `close`, `read`, and `write` are needed to do I/O in C. Neato!
+The purpose of this demo is to show that **it's easy to use C to interface with the PWM, GPIO, and EQEP sysfs entries** that Beaglebone provides to access I/O from userspace. Only standard syscall functions like `open`, `close`, `read`, and `write` are needed to do I/O in C. Neato!
 
 Some Python code is also provided for comparison. It uses the built-in Adafruit_BBIO library and [Nathaniel Lewis's eqep.py module](https://github.com/Teknoman117/beaglebot).
 
