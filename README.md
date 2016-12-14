@@ -1,25 +1,19 @@
-
-Beaglebone demo of 24-volt DC motor & rotary encoder.
-
-Dec 12, 2016
-
 Summary
 ---------
 
 Here is a very simple DC motor demo for the Beaglebone Black. It reads
-the shaft angle with a EQEP-based rotary encoder and drives the motor
+the motor shaft angle with a EQEP-based rotary encoder and drives the motor
 with PWM through a motor driver. The motor driver draws power through
 a disused desktop power supply's 12-Volt line.
 
-Simple software is provided as C and Python code. 
+The purpose of this demo is to show that **it's easy to use C to interface with the PWM, GPIO, and EQEP sysfs entries** that Beaglebone provides to access I/O from userspace. Only functions like `open`, `close`, `read`, and `write` are needed to do I/O in C. Neato!
 
-The Python code uses Adafruit_BBIO library to interface with the I/O.
+Some Python code is also provided for comparison. It uses the built-in Adafruit_BBIO library and [Nathaniel Lewis's eqep.py module](https://github.com/Teknoman117/beaglebot).
 
-The software in `bb-simple-sysfs-c-lib.c/h` provides a very thin C
-interface to the Beaglebone Black's PWM, GPIO, and EQEP sysfs
-entries. A lot of stuff is hard-coded for expediency, but it's easy
+A lot of stuff is hard-coded for expediency. This makes it easy 
 for newcomers to learn how to use C to interface with the Beaglebone's
-sysfs entries in a minimal sort of way.
+sysfs entries, without getting bogged down with C++ classes or device-tree overlays.
+
 
 Picture of setup
 -----------------
@@ -72,6 +66,8 @@ Quick Start C Program
          
     }
 ```
+
+
 
 
 
