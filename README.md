@@ -32,6 +32,7 @@ Picture of setup
 Quick Start
 --------------
 
+```bash
     ssh debian@10.42.0.123
     sudo su
     date -s "13 Dec 2013 13:43"
@@ -43,11 +44,12 @@ Quick Start
     echo 73 > /sys/class/gpio/export
     ./build
     ./test-pid    
-    
+```    
 
 Quick Start C Program
 ----------------------
 
+```c
     #include "bb-simple-sysfs-c-lib.h"
     void main() {
       setup();
@@ -69,7 +71,7 @@ Quick Start C Program
       shutdown();
          
     }
-
+```
 
 
 
@@ -119,36 +121,45 @@ The file `bb-simple-sysfs-c-lib.c/h` provides a very thin C interface to the Bea
 For expediency, I hard-coded the sysfs entries for the PWM, two GPIOs, and
 EQEP in `bb-simple-sysfs-c-lib.h`:
 
-#define PWM_PATH           "/sys/devices/ocp.3/pwm_test_P8_34.18/"
-#define GPIO_MOTORDIR_PATH "/sys/class/gpio/gpio70/"
-#define GPIO_STBY_PATH     "/sys/class/gpio/gpio73/"
-#define EQEP_PATH          "/sys/devices/ocp.3/48302000.epwmss/48302180.eqep/"
+
+```c
+    #define PWM_PATH           "/sys/devices/ocp.3/pwm_test_P8_34.18/"
+    #define GPIO_MOTORDIR_PATH "/sys/class/gpio/gpio70/"
+    #define GPIO_STBY_PATH     "/sys/class/gpio/gpio73/"
+    #define EQEP_PATH          "/sys/devices/ocp.3/48302000.epwmss/48302180.eqep/"
+```
 
 If these sysfs directories don't exist, execute the following lines to create them:
 
 export SLOTS=/sys/devices/bone_capemgr.9/slots (the .9 may be different for you).
 
+```bash
     $ export SLOTS=$(find /sys/devices -name slots)
     $ echo am33xx_pwm > $SLOTS
     $ echo bone_pwm_P8_34 > $SLOTS
     $ echo bone_eqep1 > $SLOTS
     $ echo 70 > /sys/class/gpio/export
     $ echo 73 > /sys/class/gpio/export
+```
 
-(Note: the `slots` file on my machine lives at `/sys/devices/bone_capemgr.9/slots`.)
+Notes:
 
-(Note: The Exploring Beaglebone book's Fig 6-6 shows that P8_45 (that
+- the `slots` file on my machine lives at `/sys/devices/bone_capemgr.9/slots`.
+
+- The Exploring Beaglebone book's Fig 6-6 shows that P8_45 (that
 I connected to the motor driver's "direction" pin) is GPIO 70, and
-P8_44 (I connected to "brake" / standby) is GPIO 73.)
+P8_44 (I connected to "brake" / standby) is GPIO 73.
 
-(Note: The EQEP directory may be named slightly different; find the precise one with
+- The EQEP directory may be named slightly different; find the precise one with
 
        $ find /sys/devices/ -iname "*qep*"
         /sys/devices/ocp.3/48302000.epwmss/48302180.eqep
 
-the same goes for the PWM; use `find /sys/devices/ -name duty` to find it.)
+- The same goes for the PWM; use `find /sys/devices/ -name duty` to find it.
 
-(Note: Running Python's Adafruit library wipes out the sysfs entries, e.g, Adafruit_BBIO.PWM.cleanup(), so you will have to re-echo them to recreate them.)
+- Running Python's Adafruit library wipes out the sysfs entries, e.g, Adafruit_BBIO.PWM.cleanup(), so you will have to re-echo them to recreate them.
+
+
 
 The motor driver draws power from a Dell desktop power supply's 12V
 line. I hard-coded the PWM period to 50kHz. The rotary encoder seems to have a resolution of 1500 lines per revolution:
