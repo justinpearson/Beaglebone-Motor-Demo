@@ -153,11 +153,12 @@ the same goes for the PWM; use `find /sys/devices/ -name duty` to find it.)
 The motor driver draws power from a Dell desktop power supply's 12V
 line. I hard-coded the PWM period to 50kHz. The rotary encoder seems to have a resolution of 1500 lines per revolution:
 
+```c
       #define MAX_VOLTAGE 11.7 // Volts, Dell desktop power supply
       #define NS_PER_PWM_PERIOD 20000 // ns per PWM period
       #define NS_PER_PWM_PERIOD_STR "20000"
       #define EQEP_PER_REV 1500 // I counted by hand, rough estimate
-
+```
 
 
 Details / Notes
