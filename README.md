@@ -151,8 +151,9 @@ P8_44 (I connected to "brake" / standby) is GPIO 73.
 
 - The EQEP directory may be named slightly different; find the precise one with
 
-       $ find /sys/devices/ -iname "*qep*"
-       /sys/devices/ocp.3/48302000.epwmss/48302180.eqep
+```bash
+    $ find /sys/devices/ -iname "*qep*"
+```
 
 - The same goes for the PWM; use `find /sys/devices/ -name duty` to find it.
 
