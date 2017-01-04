@@ -42,6 +42,7 @@ Quick Start
 
 - Plug in the BB's 5V power plug. If the 4 blue LEDs don't start blinking in 5 seconds, unplug it and re-plug it.
 - Then, ssh into the BB from your laptop. (The BB's IP address is hard-coded as 10.42.0.123, so make your laptop 10.42.0.2 or something.)
+- Note: it's possible to have a wireless Internet connection while being ssh'd to the Beaglebone over wired ethernet. See [this](http://askubuntu.com/questions/10741/how-to-set-up-dual-wired-and-wireless-connections) for setup on Ubuntu.
 
 ```bash
     ssh debian@10.42.0.123
@@ -55,14 +56,14 @@ The `run.sh` script does 3 things:
 
 1. Loads the PWM, GPIO, and EQEP device-tree overlays necessary to run the demo. It essentially does
 
-  ```bash
-      export SLOTS=$(find /sys/devices -name slots)
-      echo am33xx_pwm     > $SLOTS
-      echo bone_pwm_P8_34 > $SLOTS
-      echo bone_eqep1     > $SLOTS
-      echo 70             > /sys/class/gpio/export
-      echo 73             > /sys/class/gpio/export
-  ```
+```bash
+export SLOTS=$(find /sys/devices -name slots)
+echo am33xx_pwm     > $SLOTS
+echo bone_pwm_P8_34 > $SLOTS
+echo bone_eqep1     > $SLOTS
+echo 70             > /sys/class/gpio/export
+echo 73             > /sys/class/gpio/export
+```
 
   Moreover, it also generates a header file `sysfs-paths.h` that just `#defines` the paths of the PWM, GPIO and EQEP sysfs entries so that functions in `bb-simple-sysfs-c-lib.h` can use them.
 
