@@ -55,18 +55,18 @@ The `run.sh` script does 3 things:
 
 1. Loads the PWM, GPIO, and EQEP device-tree overlays necessary to run the demo. It essentially does
 
-```bash
-    export SLOTS=$(find /sys/devices -name slots)
-    echo am33xx_pwm     > $SLOTS
-    echo bone_pwm_P8_34 > $SLOTS
-    echo bone_eqep1     > $SLOTS
-    echo 70             > /sys/class/gpio/export
-    echo 73             > /sys/class/gpio/export
-```
+  ```bash
+      export SLOTS=$(find /sys/devices -name slots)
+      echo am33xx_pwm     > $SLOTS
+      echo bone_pwm_P8_34 > $SLOTS
+      echo bone_eqep1     > $SLOTS
+      echo 70             > /sys/class/gpio/export
+      echo 73             > /sys/class/gpio/export
+  ```
 
-Moreover, it also generates a header file `sysfs-paths.h` that just `#defines` the paths of the PWM, GPIO and EQEP sysfs entries so that functions in `bb-simple-sysfs-c-lib.h` can use them.
+  Moreover, it also generates a header file `sysfs-paths.h` that just `#defines` the paths of the PWM, GPIO and EQEP sysfs entries so that functions in `bb-simple-sysfs-c-lib.h` can use them.
 
-Originally, I hard-coded the sysfs paths in `bb-simple-sysfs-c-lib.h`. But it turns out that the directories sometimes change between reboots, e.g., sometimes `echo bone_pwm_P8_34 > $SLOTS` results in a directory `/sys/devices/ocp.3/pwm_test_P8_34.18/` and sometimes `/sys/devices/ocp.3/pwm_test_P8_34.12/`.
+  Originally, I hard-coded the sysfs paths in `bb-simple-sysfs-c-lib.h`. But it turns out that the directories sometimes change between reboots, e.g., sometimes `echo bone_pwm_P8_34 > $SLOTS` results in a directory `/sys/devices/ocp.3/pwm_test_P8_34.18/` and sometimes `/sys/devices/ocp.3/pwm_test_P8_34.12/`.
 
 2. Compiles the library (`bb-simple-sysfs-c-lib.c/h`), tests (`tests.c`), and main (`main.c`) programs.
 
