@@ -22,7 +22,7 @@
 #define MAX_VOLTAGE 11.7 // Volts, Dell desktop power supply
 #define NS_PER_PWM_PERIOD 20000
 #define NS_PER_PWM_PERIOD_STR "20000"
-#define EQEP_PER_REV 1500 // I counted by hand, rough estimate
+#define EQEP_PER_REV 1442 // eqep ticks per revolution
 
 
 // Setup
