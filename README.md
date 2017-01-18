@@ -40,19 +40,47 @@ Quick Start
 
 ### Configure Beaglebone, build, & run 
 
+- Plug in the BB's 5V power plug. If the 4 blue LEDs don't start blinking in 5 seconds, unplug it and re-plug it.
+- Then, ssh into the BB from your laptop. (The BB's IP address is hard-coded as 10.42.0.123, so make your laptop 10.42.0.2 or something.)
+- Note: it's possible to have a wireless Internet connection while being ssh'd to the Beaglebone over wired ethernet. See [this](http://askubuntu.com/questions/10741/how-to-set-up-dual-wired-and-wireless-connections) for setup on Ubuntu.
+
 ```bash
     ssh debian@10.42.0.123
     sudo su
-    date -s "13 Dec 2013 13:43"
-    export SLOTS=$(find /sys/devices -name slots)
-    echo am33xx_pwm > $SLOTS
-    echo bone_pwm_P8_34 > $SLOTS
-    echo bone_eqep1 > $SLOTS
-    echo 70 > /sys/class/gpio/export
-    echo 73 > /sys/class/gpio/export
-    ./build
-    ./test-pid    
+    date -s "13 Dec 2013 13:43"  # or whatever
+    cd Beaglebone-Motor-Demo/C
+    ./run.sh
 ```    
+
+The `run.sh` script does 3 things:
+
+1. Loads the PWM, GPIO, and EQEP device-tree overlays necessary to run the demo. It essentially does
+
+```bash
+export SLOTS=$(find /sys/devices -name slots)
+echo am33xx_pwm     > $SLOTS
+echo bone_pwm_P8_34 > $SLOTS
+echo bone_eqep1     > $SLOTS
+echo 70             > /sys/class/gpio/export
+echo 73             > /sys/class/gpio/export
+```
+
+  Moreover, it also generates a header file `sysfs-paths.h` that just `#defines` the paths of the PWM, GPIO and EQEP sysfs entries so that functions in `bb-simple-sysfs-c-lib.h` can use them.
+
+  Originally, I hard-coded the sysfs paths in `bb-simple-sysfs-c-lib.h`. But it turns out that the directories sometimes change between reboots, e.g., sometimes `echo bone_pwm_P8_34 > $SLOTS` results in a directory `/sys/devices/ocp.3/pwm_test_P8_34.18/` and sometimes `/sys/devices/ocp.3/pwm_test_P8_34.12/`.
+
+2. Compiles the library (`bb-simple-sysfs-c-lib.c/h`), tests (`tests.c`), and main (`main.c`) programs.
+
+3. Runs `main`. 
+
+
+
+### Handy BB commands
+
+- Shutdown: `# shutdown -hP now`
+- Reboot: `# reboot`
+
+
 
 ### Turn motor in C
 

@@ -3,6 +3,7 @@
 #include <fcntl.h> // flags for 'open', eg O_WRONLY, O_SYNC, etc
 #include <string.h> // strlen
 #include <math.h> // fabs
+#include <stdlib.h> // exit
 
 #include "bb-simple-sysfs-c-lib.h"
 
@@ -12,13 +13,14 @@ int fd_gpio_dir_direction, fd_gpio_dir_value; // GPIO pin for motor direction
 int fd_gpio_stby_direction, fd_gpio_stby_value; // GPIO pin for "standby"
 int fd_eqep_period, fd_eqep_position; // EQEP
 
+int alreadySetup = 0;
 
+///////////////////////////////////////////////////////////////////////////
 // Setup / Shutdown (Must start / end your program with this!)
 
 void setup() {
   printf("Setting up...\n");
 
-  static int alreadySetup = 0;
   if( alreadySetup ) {
     printf("You've already called setup()!\n");
     return;
@@ -42,19 +44,30 @@ void setup() {
   fd_eqep_position       = open(EQEP_PATH "position", rw);
 
   if( fd_pwm_period == -1 || fd_pwm_duty == -1 || fd_pwm_run == -1 ) {
-    printf("Couldn't find " PWM_PATH ", prob need to \n$ echo am33xx_pwm > $SLOTS \n$ echo bone_pwm_P8_34 > $SLOTS\n");
+    printf("Couldn't find " PWM_PATH ", is it in /sys/devices/...? Prob need to \n"\
+	   "$ echo am33xx_pwm > $SLOTS \n"\
+	   "$ echo bone_pwm_P8_34 > $SLOTS\n"\
+	   "OR, re-run build_paths.sh to re-create sysfs-paths.h,"
+	   "since the PWM sysfs entry changes btwn boots :(\n");
+    exit(EXIT_FAILURE);
   }
   if( fd_gpio_dir_direction == -1 || fd_gpio_dir_value == -1 ) {
     printf("Couldn't find " GPIO_MOTORDIR_PATH ", prob need to \n$ echo 70 > /sys/class/gpio/export\n");
+    exit(EXIT_FAILURE);
   }
   if( fd_gpio_stby_direction == -1 || fd_gpio_stby_value == -1 ) {
     printf("Couldn't find " GPIO_STBY_PATH ", prob need to \n$ echo 73 > /sys/class/gpio/export\n");
+    exit(EXIT_FAILURE);
   }
   if( fd_eqep_period == -1 || fd_eqep_position == -1 ) {
-    printf("Couldn't find " EQEP_PATH ", prob need to \n$ echo bone_eqep1 > $SLOTS.\n");
+    printf("Couldn't find " EQEP_PATH ", prob need to \n$ echo bone_eqep1 > $SLOTS.\n"
+	   "OR, re-run build_paths.sh to re-create sysfs-paths.h,"
+	   "since the EQEP sysfs entry changes btwn boots sometimes :(\n");
+    exit(EXIT_FAILURE);
   }
 
 
+  alreadySetup = 1;
 
   // PWM set to 0%, 50kHz (20,000 ns per pwm period)
   write( fd_pwm_period, NS_PER_PWM_PERIOD_STR,5 );
@@ -70,8 +83,9 @@ void setup() {
   // EQEP period
   write(fd_eqep_position, "0", 1);
   write(fd_eqep_period, "100000000",9);  // ns => 0.1 sec
+  printf("FYI, setting the EQEP period to 100000000 ns = 0.1sec, can change in file %s function %s line %d\n",__FILE__,__FUNCTION__,__LINE__);
 
-  alreadySetup = 1;
+
 
   printf("Done setting up.\n");
 
@@ -87,23 +101,27 @@ void shutdown() {
   close(fd_gpio_stby_value);
   close(fd_eqep_period);
   close(fd_eqep_position);
+
+  alreadySetup = 0; // if someone wants to use, they'll have to call setup() again.
 }
 
 
+void check_setup() { if( !alreadySetup ) { printf("Oops, need to call setup() first! Exiting.\n"); exit(EXIT_FAILURE); } }
 
+////////////////////////////////////////////////////////
 // Useful functions
 
 // GPIO
-void stby()   { write(fd_gpio_stby_value,"1",1); }
-void unstby() { write(fd_gpio_stby_value,"0",1); }
-void cw()     { write(fd_gpio_dir_value, "0",1); }
-void ccw()    { write(fd_gpio_dir_value, "1",1); }
+void stby()   { check_setup(); write(fd_gpio_stby_value,"1",1); }
+void unstby() { check_setup(); write(fd_gpio_stby_value,"0",1); }
+void cw()     { check_setup(); write(fd_gpio_dir_value, "0",1); }
+void ccw()    { check_setup(); write(fd_gpio_dir_value, "1",1); }
 
 
 // PWM
-void stop() 		       { write(fd_pwm_run,"0",1);    }
-void run()  		       { write(fd_pwm_run,"1",1);    }
-void rawduty(char* d, int len) { write(fd_pwm_duty, d, len); }
+void stop() 		       { check_setup(); write(fd_pwm_run,"0",1);    }
+void run()  		       { check_setup(); write(fd_pwm_run,"1",1);    }
+void rawduty(char* d, int len) { check_setup(); write(fd_pwm_duty, d, len); }
 
 void duty( double d ) {
   if( d>100 ) d=100;
@@ -125,6 +143,7 @@ void voltage( double v ) {
 
 // EQEP
 int eqep_counts() {
+  check_setup(); 
   char b[50] = {0};
   int i = pread(fd_eqep_position,b,45,0);
   int enc = 999;
@@ -140,274 +159,3 @@ double shaft_angle_deg() {
 }
 
 
-
-
-
-
-
-/* void test_eqep_1() { */
-
-/*   //////////////////////////////////////////////////////// */
-/*   // Test EQEP */
-/*   setup(); */
-/*   char b; */
-/*   int i; */
-/*   int max = 10; */
-/*   int ctr = 0; */
-/*   do { */
-/*     ctr++; */
-/*     if( ctr > max ) { printf("Max reached!\n"); break; } */
-/*     b = 99; */
-/*     i = pread(fd_eqep_position,&b,1,0); */
-/*   printf("read returned: %d (%s)\n",i, strerror(errno)); */
-/*   printf("byte: %d\n",b); */
-/*   } while( i > 0); */
-/*   shutdown(); */
-/* } */
-
-
-
-
-
-
-/* void test_eqep_2() { */
-
-/*   //////////////////////////////////////////////////////// */
-/*   // Test eqep 2 */
-  
-/*   setup(); */
-/*   char b[10]; */
-/*   int ii = 0; */
-/*   for( ii=0; ii<5; ii++ ) { */
-/*     int i = pread(fd_eqep_position,b,10,0); */
-/*     printf("read returned: %d (%s)\n",i, strerror(errno)); */
-/*     printf("b: %s\n",b); */
-/*     int j; */
-/*     for( j=0; j<i; j++ ) { */
-/*       printf("byte %d: %d\n",j,b[j]); */
-/*     } */
-/*     sleep(1); */
-/*   } */
-/*   shutdown(); */
-/* } */
-
-
-
-  ////////////////////////////////////////////////////////  
-  // Test the "motor direction" pin
-  /*
-  printf("out ");
-  write( fd_gpio_dir_direction, "out", 3 );
-  printf("1");
-  write( fd_gpio_dir_value, "1", 1 );
-  sleep(1);
-  printf("0");
-  write( fd_gpio_dir_value, "0", 1 );
-  sleep(1);
-  printf("1");
-  write( fd_gpio_dir_value, "1", 1 );
-  sleep(1);
-  printf("0");
-  write( fd_gpio_dir_value, "0", 1 );
-  sleep(1);
-  printf("1");
-  write( fd_gpio_dir_value, "1", 1 );
-  sleep(1);
-  printf("0");
-  write( fd_gpio_dir_value, "0", 1 );
-  sleep(1);
-  */
-
-  ////////////////////////////////////////////////////////
-  // Test motor dir pin, with fn calls.
-  /*
-  printf("out ");
-  write( fd_gpio_dir_direction, "out", 3 );
-  printf("ccw");
-  ccw();
-  sleep(1);
-  printf("cw");
-  cw();
-  sleep(1);
-  printf("ccw");
-  ccw();
-  sleep(1);
-  printf("cw");
-  cw();
-  sleep(1);
-  printf("ccw");
-  ccw();
-  sleep(1);
-  printf("cw");
-  cw();
-  sleep(1);
-  */
-
-
-  ////////////////////////////////////////////////////////
-  // Test out stby pin
-  /*
-  write( fd_gpio_stby_direction, "out", 3 );
-  printf("stby");
-  stby();
-  sleep(1);
-  printf("unstby");
-  unstby();
-  sleep(1);
-  printf("stby");
-  stby();
-  sleep(1);
-  printf("unstby");
-  unstby();
-  sleep(1);
-  printf("stby");
-  stby();
-  sleep(1);
-  printf("unstby");
-  unstby();
-  sleep(1); 
-  printf("stby");
-  stby();
-  */
-
-
-  ////////////////////////////////////////////////////////
-  // Test PWM duty cycle.
-  /*
-  setup();
-  unstby();
-  run();
-  rawduty("20000",5);
-  sleep(2);
-  rawduty("10000",5);
-  sleep(2);
-  rawduty("0",1);
-  sleep(2);
-  stby();
-  stop();
-  */
-
-
-  ////////////////////////////////////////////////////////
-  // Run motor a little bit
-  /*
-  setup();
-
-  unstby();
-  run();
-
-  pos();
-  cw();
-  rawduty("20000",5);
-  sleep(1);
-
-  pos();
-  ccw();
-  rawduty("15000",5);
-  sleep(1);
-
-  pos();
-  cw();
-  rawduty("10000",5);
-  sleep(1);
-
-
-  pos();
-  ccw();
-  rawduty("5000",4);
-  sleep(1);
-
-
-  pos();
-  cw();
-  rawduty("1000",4);
-  sleep(1);
-
-  pos();
-  ccw();
-  rawduty("0",1);
-  sleep(1);
-
-  pos();
-  cw();
-  rawduty("5000",4);
-  sleep(1);
-
-  pos();
-  ccw();
-  rawduty("10000",5);
-  sleep(1);
-
-  pos();
-  cw();
-  rawduty("15000",5);
-  sleep(1);
-
-  pos();
-  ccw();
-  rawduty("20000",5);
-  sleep(1);
-
-  stop();
-  */
-
-
-
-  ////////////////////////////////////////////////////////
-  // Test duty()
-
-  /* setup(); */
-
-  /* unstby(); */
-  /* run(); */
-
-  /* int duties[] = {0, 20, 40, 60, 80, 100, 80, 60, 40, 20, 0}; */
-  /* int n = 11; */
-  /* int i=0; */
-  /* for( i=0; i<n; i++ ) { */
-  /*   pos(); */
-  /*   if( i%2==0 ) cw(); */
-  /*   else         ccw(); */
-  /*   duty(duties[i]); */
-  /*   sleep(1); */
-  /* } */
-
-  /* stop(); */
-
-
-
-
-
-/* void test_duty() { */
-
-
-/*   //////////////////////////////////////////////////////// */
-/*   // Test duty() with doubles: change the duty cycle sinusoidally. */
-
-/*   setup(); */
-/*   unstby(); */
-/*   run(); */
-/*   cw(); */
-
-/*   double dt = 0.1; // sec, time per iteration */
-/*   double max_time = 5; // sec, max time of sim */
-/*   int num_iters = max_time / dt; */
-/*   double freq = 1; // Hz, controls how fast the duty cycle changes */
-
-/*   int i=0; */
-/*   for( i=0; i<num_iters; i++ ) { */
-/*     pos(); */
-/*     double d = 50.0 + 50.0 * sin(2.0 * M_PI * freq * dt * i); */
-/*     duty(d); */
-/*     usleep(dt*1000000.0); */
-/*   } */
-
-/*   stop(); */
-/*   shutdown(); */
-
-/* } */
-  
-
-
-
-//}
