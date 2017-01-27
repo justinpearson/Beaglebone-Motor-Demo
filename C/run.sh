@@ -45,18 +45,15 @@ for dto in bone_pwm_P8_34 am33xx_pwm bone_eqep1; do
 done 
 
 
-
 # Load the GPIOs if they're not there.
-
 pushd /sys/class/gpio/
-
 for n in 70 73; do
     if [ ! -d "gpio$n" ]; then
-	echo "Hm, GPIO $n not loaded? I'll load it."
-	echo $n > /sys/class/gpio/export
+        echo "Hm, GPIO $n not loaded? I'll load it."
+        echo $n > export
     fi
+    echo "out" > "gpio$n/direction" # set as an output
 done
-
 popd
 
 
