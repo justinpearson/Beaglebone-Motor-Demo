@@ -49,14 +49,13 @@ done
 # Load the GPIOs if they're not there.
 
 pushd /sys/class/gpio/
-
 for n in 70 73; do
     if [ ! -d "gpio$n" ]; then
 	echo "Hm, GPIO $n not loaded? I'll load it."
 	echo $n > /sys/class/gpio/export
     fi
+    echo "out" > "/sys/class/gpio/gpio$n/direction" # set as an output
 done
-
 popd
 
 
